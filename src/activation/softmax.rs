@@ -42,7 +42,7 @@ impl ActivationFunction for Softmax {
       let sample_outputs = outputs.row(sample_num).clone_owned().transpose();
 
       let jacobian_matrix = (na::DMatrix::from_diagonal(&sample_outputs) - (&sample_outputs * sample_outputs.transpose())).clone_owned();
-      let dvalues = jacobian_matrix * sample_gradients;
+      let dvalues = sample_gradients * jacobian_matrix;
 
       derivative.set_row(sample_num, &dvalues);
     }

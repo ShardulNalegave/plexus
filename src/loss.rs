@@ -10,7 +10,7 @@ use crate::descriptor::LossType;
 // ===================
 
 pub trait LossFunction {
-  fn calculate(&mut self, predicted: &na::DMatrix<f64>, expected: &na::DMatrix<f64>) -> (na::DMatrix<f64>, f64);
+  fn calculate(&mut self, predicted: &na::DMatrix<f64>, expected: &na::DMatrix<f64>) -> (na::DVector<f64>, f64);
   fn derivative(&mut self, predicted: &na::DMatrix<f64>, expected: &na::DMatrix<f64>) -> na::DMatrix<f64>;
 }
 
