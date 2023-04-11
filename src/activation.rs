@@ -1,37 +1,33 @@
 
-pub mod linear;
-pub mod step;
-pub mod relu;
-pub mod softmax;
-pub mod sigmoid;
+mod linear;
+mod step;
+mod relu;
+mod sigmoid;
+mod softmax;
 
-#[derive(Copy, Clone)]
-pub enum Activation {
-  Linear,
-  Step,
-  ReLU,
-  Softmax,
-  Sigmoid,
+pub use self::{
+  linear::Linear,
+  step::Step,
+  relu::ReLU,
+  sigmoid::Sigmoid,
+  softmax::Softmax,
+};
+
+// ===== Imports =====
+use crate::descriptor::ActivationType;
+// ===================
+
+pub trait ActivationFunction {
+  fn forward(&mut self, inputs: &na::DMatrix<f64>) -> na::DMatrix<f64>;
+  fn backward(&mut self, gradients: &na::DMatrix<f64>) -> na::DMatrix<f64>;
 }
 
-impl Activation {
-  pub fn forward(&self, inputs: &na::DMatrix<f64>) -> na::DMatrix<f64> {
-    match *self {
-      Self::Step => step::Step::forward(inputs),
-      Self::Linear => linear::Linear::forward(inputs),
-      Self::ReLU => relu::ReLU::forward(inputs),
-      Self::Softmax => softmax::Softmax::forward(inputs),
-      Self::Sigmoid => sigmoid::Sigmoid::forward(inputs),
-    }
-  }
-
-  pub fn backward(&self, gradients: &na::DMatrix<f64>, inputs: &na::DMatrix<f64>) -> na::DMatrix<f64> {
-    match *self {
-      Self::Step => step::Step::backward(gradients, inputs),
-      Self::Linear => linear::Linear::backward(gradients, inputs),
-      Self::ReLU => relu::ReLU::backward(gradients, inputs),
-      Self::Softmax => softmax::Softmax::backward(gradients, inputs),
-      Self::Sigmoid => sigmoid::Sigmoid::backward(gradients, inputs),
-    }
+pub fn activation_function_from_descriptor(activ_type: ActivationType) -> Box<dyn ActivationFunction> {
+  match activ_type {
+    ActivationType::Step => Box::new(Step),
+    ActivationType::Linear => Box::new(Linear),
+    ActivationType::ReLU => Box::new(ReLU::default()),
+    ActivationType::Sigmoid => Box::new(Sigmoid::default()),
+    ActivationType::Softmax => Box::new(Softmax::default()),
   }
 }

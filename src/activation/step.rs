@@ -1,11 +1,22 @@
 
+// ===== Imports =====
+use crate::activation::ActivationFunction;
+// ===================
+
 pub struct Step;
-impl Step {
-  pub fn forward(inputs: &na::DMatrix<f64>) -> na::DMatrix<f64> {
-    unimplemented!()
+
+impl ActivationFunction for Step {
+  fn forward(&mut self, inputs: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+    inputs.map(|x| {
+      if x > 0.0 {
+        1.0
+      } else {
+        0.0
+      }
+    })
   }
 
-  pub fn backward(gradients: &na::DMatrix<f64>, inputs: &na::DMatrix<f64>) -> na::DMatrix<f64> {
-    unimplemented!()
+  fn backward(&mut self, gradients: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+    na::DMatrix::zeros(gradients.nrows(), gradients.ncols())
   }
 }

@@ -1,11 +1,16 @@
 
+// ===== Imports =====
+use crate::activation::ActivationFunction;
+// ===================
+
 pub struct Linear;
-impl Linear {
-  pub fn forward(inputs: &na::DMatrix<f64>) -> na::DMatrix<f64> {
-    unimplemented!()
+
+impl ActivationFunction for Linear {
+  fn forward(&mut self, inputs: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+    inputs.clone()
   }
 
-  pub fn backward(gradients: &na::DMatrix<f64>, inputs: &na::DMatrix<f64>) -> na::DMatrix<f64> {
-    unimplemented!()
+  fn backward(&mut self, gradients: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+    gradients.clone()
   }
 }
