@@ -31,8 +31,38 @@ impl CombinedActivationLossFunction for ActivationSoftmax_LossCategoricalCrossEn
   }
 
   fn backward(&mut self, gradients: &na::DMatrix<f64>, expected_outputs: &na::DMatrix<f64>) -> na::DMatrix<f64> {
+    let num_samples = gradients.nrows() as f64;
+
     gradients.map_with_location(|i, j, x| {
-      x - expected_outputs[(i,j)]
+      (x - expected_outputs[(i,j)]) / num_samples
     })
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_backward_pass() {
+    let softmax_outputs = na::DMatrix::from_vec(3, 3, vec![
+      0.7, 0.1, 0.02,
+      0.1, 0.5, 0.9,
+      0.2, 0.4, 0.08,
+    ]);
+    let targets = na::DMatrix::from_vec(3, 3, vec![
+      1.0, 0.0, 0.0,
+      0.0, 1.0, 1.0,
+      0.0, 0.0, 0.0,
+    ]);
+
+    let mut comb_func = ActivationSoftmax_LossCategoricalCrossEntropy::default();
+    let gradients = comb_func.backward(&softmax_outputs, &targets);
+
+    println!("{}", softmax_outputs);
+    println!("{}", targets);
+    println!("{}", gradients);
+
+    assert!(true);
   }
 }

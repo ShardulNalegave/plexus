@@ -5,6 +5,7 @@ edition = "2021"
 authors = ["Shardul Nalegave <nalegaveshardul40@gmail.com>"]
 
 [dependencies]
+rand = "0.8"
 nalgebra = "0.32"
 serde_yaml = "0.9"
 

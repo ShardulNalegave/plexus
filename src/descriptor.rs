@@ -10,20 +10,20 @@ pub struct NeuralNetworkDescriptor {
   output_layer: OutputLayerDescriptor,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct LayerDescriptor {
   neurons: usize,
   activation: ActivationType,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct OutputLayerDescriptor {
   neurons: usize,
   loss: LossType,
   activation: ActivationType,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum ActivationType {
   Step,
   Linear,
@@ -32,7 +32,12 @@ pub enum ActivationType {
   Softmax,
 }
 
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum LossType {
-  CategoricalCrossEntropy
+  CategoricalCrossEntropy,
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Serialize, Deserialize)]
+pub enum LayerType {
+  Dense,
 }
