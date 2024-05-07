@@ -9,13 +9,16 @@ use std::ops::{
 };
 // ===================
 
+/// # Numeric
+/// Marker trait for numerical types in Rust.
 pub trait Numeric: 
   Default +
   Sized + Copy + Clone +
-  Add + AddAssign +
-  Sub + SubAssign +
-  Mul + MulAssign +
-  Div + DivAssign +
+  PartialEq +
+  Add<Output = Self> + AddAssign +
+  Sub<Output = Self> + SubAssign +
+  Mul<Output = Self> + MulAssign +
+  Div<Output = Self> + DivAssign +
   Rem + RemAssign {}
 
 impl Numeric for isize {}
