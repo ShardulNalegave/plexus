@@ -13,7 +13,7 @@ use crate::utils::Numeric;
 /// Data-type to represent a Matrix of order `RxC` and containing values of type `T`.
 #[derive(Clone, Copy, Debug)]
 pub struct Matrix<const R: usize, const C: usize, T: Numeric = f64> {
-  data: [[T; C]; R],
+  pub(crate) data: [[T; C]; R],
 }
 
 impl<const R: usize, const C: usize, T: Numeric> From<[[T; C]; R]> for Matrix<R, C, T> {
@@ -47,11 +47,24 @@ impl<const R: usize, const C: usize, T: Numeric> Matrix<R, C, T> {
   /// Creates a new `Matrix` of the provided order and fills it with the provided value.
   /// 
   /// **Note:** Both rows and columns should be >= 1.
-  pub fn new_with_fill(rows: usize, cols: usize, fill: T) -> Self {
-    assert!(rows != 0, "Number of rows cannot be zero");
-    assert!(cols != 0, "Number of columns cannot be zero");
+  pub fn new_with_fill(fill: T) -> Self {
+    assert!(R != 0, "Number of rows cannot be zero");
+    assert!(C != 0, "Number of columns cannot be zero");
 
     Self { data: [[fill; C]; R] }
+  }
+
+  /// # New with Generator
+  /// Creates a new `Matrix` of the provided order and call the generator function to get each value.
+  pub fn new_with_gen<F>(mut f: F) -> Self
+    where
+      F: FnMut((usize, usize)) -> T {
+    assert!(R != 0, "Number of rows cannot be zero");
+    assert!(C != 0, "Number of columns cannot be zero");
+    
+    Self {
+      data: std::array::from_fn(|i| std::array::from_fn(|j| f((i, j)))),
+    }
   }
 
   /// # Rows
@@ -98,6 +111,10 @@ impl<const R: usize, const C: usize, T: Numeric> Matrix<R, C, T> {
 
     Matrix::new(m)
   }
+
+  pub fn row(&self, i: usize) -> &[T; C] {
+    &self.data[i]
+  }
 }
 
 /// Implementation for square matrices
@@ -143,12 +160,16 @@ impl<const R: usize, const C: usize, T: Numeric> Index<(usize, usize)> for Matri
   type Output = T;
 
   fn index(&self, index: (usize, usize)) -> &Self::Output {
+    assert!(index.0 < R, "Row index out of bounds");
+    assert!(index.1 < C, "Column index out of bounds");
     &self.data[index.0][index.1]
   }
 }
 
 impl<const R: usize, const C: usize, T: Numeric> IndexMut<(usize, usize)> for Matrix<R, C, T> {
   fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+    assert!(index.0 < R, "Row index out of bounds");
+    assert!(index.1 < C, "Column index out of bounds");
     &mut self.data[index.0][index.1]
   }
 }
