@@ -6,7 +6,7 @@ use std::ops::{
   Sub, SubAssign,
   Mul,
 };
-use crate::utils::Numeric;
+use crate::{utils::Numeric, CVector, RVector};
 // ===================
 
 /// # Matrix
@@ -114,6 +114,14 @@ impl<const R: usize, const C: usize, T: Numeric> Matrix<R, C, T> {
 
   pub fn row(&self, i: usize) -> &[T; C] {
     &self.data[i]
+  }
+
+  pub fn add_row_vector(self, rhs: RVector<C, T>) -> Self {
+    Matrix::new_with_gen(|(i, j)| self[(i, j)] + rhs[(0, j)])
+  }
+
+  pub fn add_column_vector(self, rhs: CVector<R, T>) -> Self {
+    Matrix::new_with_gen(|(i, j)| self[(i, j)] + rhs[(i, 0)])
   }
 }
 
