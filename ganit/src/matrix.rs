@@ -1,19 +1,19 @@
 
+pub mod iterator;
+
 // ===== Imports =====
 use std::ops::{
-  Index, IndexMut,
-  Add, AddAssign,
-  Sub, SubAssign,
-  Mul,
+  Add, AddAssign, Index, IndexMut, Mul, Sub, SubAssign
 };
 use crate::{utils::Numeric, CVector, RVector};
+use self::iterator::{MatrixEnumeratedIterator, MatrixIterator};
 // ===================
 
 /// # Matrix
 /// Data-type to represent a Matrix of order `RxC` and containing values of type `T`.
 #[derive(Clone, Copy, Debug)]
 pub struct Matrix<const R: usize, const C: usize, T: Numeric = f64> {
-  pub(crate) data: [[T; C]; R],
+  data: [[T; C]; R],
 }
 
 impl<const R: usize, const C: usize, T: Numeric> From<[[T; C]; R]> for Matrix<R, C, T> {
@@ -112,16 +112,64 @@ impl<const R: usize, const C: usize, T: Numeric> Matrix<R, C, T> {
     Matrix::new(m)
   }
 
+  /// # Row
+  /// Returns row `i` as a slice
   pub fn row(&self, i: usize) -> &[T; C] {
     &self.data[i]
   }
 
-  pub fn add_row_vector(self, rhs: RVector<C, T>) -> Self {
+  /// # Add Row Vector
+  /// Adds row vector to a matrix.
+  /// ```
+  /// use ganit::{Matrix, RVector};
+  /// 
+  /// let m1: Matrix<2, 3, i32> = [
+  ///   [1, 2, 3],
+  ///   [4, 5, 6],
+  /// ].into();
+  /// 
+  /// let r1: RVector<3, i32> = [[1, 2, 3]].into();
+  /// 
+  /// let m2: Matrix<2, 3, i32> = [
+  ///   [2, 4, 6],
+  ///   [5, 7, 9],
+  /// ].into();
+  /// 
+  /// assert!(m1.add_row_vector(r1) == m2);
+  /// ```
+  pub fn add_row_vector(&self, rhs: RVector<C, T>) -> Self {
     Matrix::new_with_gen(|(i, j)| self[(i, j)] + rhs[(0, j)])
   }
 
-  pub fn add_column_vector(self, rhs: CVector<R, T>) -> Self {
+  /// # Add Column Vector
+  /// Adds column vector to a matrix.
+  /// ```
+  /// use ganit::{Matrix, CVector};
+  /// 
+  /// let m1: Matrix<2, 3, i32> = [
+  ///   [1, 2, 3],
+  ///   [4, 5, 6],
+  /// ].into();
+  /// 
+  /// let r1: CVector<2, i32> = [[1], [2]].into();
+  /// 
+  /// let m2: Matrix<2, 3, i32> = [
+  ///   [2, 3, 4],
+  ///   [6, 7, 8],
+  /// ].into();
+  /// 
+  /// assert!(m1.add_column_vector(r1) == m2);
+  /// ```
+  pub fn add_column_vector(&self, rhs: CVector<R, T>) -> Self {
     Matrix::new_with_gen(|(i, j)| self[(i, j)] + rhs[(i, 0)])
+  }
+
+  pub fn div_row_vector(&self, rhs: RVector<R, T>) -> Self {
+    Matrix::new_with_gen(|(i, j)| self[(i, j)] / rhs[(0, j)])
+  }
+
+  pub fn div_col_vector(&self, rhs: CVector<R, T>) -> Self {
+    Matrix::new_with_gen(|(i, j)| self[(i, j)] / rhs[(i, 0)])
   }
 }
 
@@ -139,6 +187,10 @@ impl<const N: usize, T: Numeric> Matrix<N, N, T> {
   /// 
   /// assert!(m.determinant() == -2);
   /// ```
+  /// 
+  /// Algorithm used to find determinant:-
+  /// 1. Convert the matrix into a upper-triangle matrix by applying row transformations.
+  /// 2. Determinant is equal to product of all values on the diagonal of matrix.
   pub fn determinant(&self) -> T {
     let mut m = self.data;
 
@@ -411,5 +463,47 @@ impl<const R: usize, const C: usize, T: Numeric> PartialEq for Matrix<R, C, T> {
         a.iter().zip(b.iter())
           .all(|(c, d)| c == d)
       })
+  }
+}
+
+impl<const R: usize, const C: usize, T: Numeric + Copy> FromIterator<((usize, usize), T)> for Matrix<R, C, T> {
+  fn from_iter<I: IntoIterator<Item = ((usize, usize), T)>>(iter: I) -> Self {
+    let mut data = [[T::default(); C]; R];
+
+    for (index, item) in iter {
+      data[index.0][index.1] = item;
+    }
+
+    Matrix { data }
+  }
+}
+
+impl<const R: usize, const C: usize, T: Numeric + Copy> FromIterator<T> for Matrix<R, C, T> {
+  fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+    let mut data = [[T::default(); C]; R];
+    let mut row = 0;
+    let mut col = 0;
+
+    for item in iter {
+      data[row][col] = item;
+      col += 1;
+
+      if col >= C {
+        col = 0;
+        row += 1;
+      }
+    }
+
+    Matrix { data }
+  }
+}
+
+impl<'a, const R: usize, const C: usize, T: Numeric> Matrix<R, C, T> {
+  pub fn into_iter(&'a self) -> MatrixIterator<'a, R, C, T> {
+    MatrixIterator::new(self)
+  }
+
+  pub fn into_enumerated_iter(&'a self) -> MatrixEnumeratedIterator<'a, R, C, T> {
+    MatrixEnumeratedIterator::new(self)
   }
 }
